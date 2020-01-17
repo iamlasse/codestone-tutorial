@@ -26,64 +26,15 @@ var config = {
 const tokenSecret = 'codeStoneSecret';
 
 
-var db = new sqlite3.Database('codestonedb.sql')
 
-const hashPass = (pass) => bcrypt.hashSync(pass, saltRounds);
-
-db.serialize(function () {
-  db.run('DROP TABLE IF EXISTS users ')
-  db.run('DROP TABLE IF EXISTS questions')
-  db.run('CREATE TABLE IF NOT EXISTS users (username TEXT, passwordHash TEXT)')
-  db.run('CREATE TABLE IF NOT EXISTS questions (question TEXT)')
-  
-  
-  var stmt = db.prepare('INSERT INTO users VALUES (?, ?)')
-  
-  for (var i = 0; i < 2; i++) {
-
-    const password = hashPass('Mypassword123');
-    
-
-    stmt.run(`user${i}@codestone.com`, password)
-  }
-  
-  stmt.finalize()
-  
-  
-  stmt = db.prepare('INSERT INTO questions VALUES (?)')
-  
-  for (var i = 0; i < 10; i++) {
-    stmt.run('Some Question');
-  }
-  
-  stmt.finalize()
-  
-  
-  
-  db.each('SELECT rowid AS id, question FROM questions', function (err, row) {
-    console.log(row.id + ': ' + row.question)
-  })
-
-  db.each('SELECT rowid AS id, username, passwordHash FROM users', function (err, row) {
-    console.log(row.id + ': ' + row.username)
-    console.log(row.id + ': ' + row.passwordHash)
-  })
-})
-
-db.close()
-
-
-
-app.use(bodyParser.json());
-
-app.get('/', function(req, res) {
+app.get('/', function (req, res) {
   console.log('Server works', req);
   res.send('Server works')
 })
 
 // Use JWT verify before allowing route
 // Route Guard middleware
-app.get('/test-route', verifyToken, function(req, res){
+app.get('/test-route', verifyToken, function (req, res) {
   const user_data = req.user;
 
   db = new sqlite3.Database('codestone.sql');
@@ -94,9 +45,9 @@ app.get('/test-route', verifyToken, function(req, res){
 })
 
 //AdminView users just pulls the users from the database
-app.get("/admin-view-users", function(req, res) {
+app.get("/admin-view-users", function (req, res) {
   // connect to your database
-  sql.connect(config, function(err) {
+  sql.connect(config, function (err) {
     if (err) console.log(err + "initial connection");
     console.log(config.server);
 
@@ -104,7 +55,7 @@ app.get("/admin-view-users", function(req, res) {
     var request = new sql.Request();
 
     // query to the database and get the records
-    request.query("select * from Users ", function(err, recordset) {
+    request.query("select * from Users ", function (err, recordset) {
       if (err) console.log(err);
 
       // send records as a response
@@ -114,8 +65,8 @@ app.get("/admin-view-users", function(req, res) {
   });
 });
 
-app.get("/user-questions", verifyToken, function(req, res) {
-  app.use(function(req, res, next) {
+app.get("/user-questions", verifyToken, function (req, res) {
+  app.use(function (req, res, next) {
     var token = req.cookies.auth;
 
     console.log(bearerToken + "before if");
@@ -123,20 +74,20 @@ app.get("/user-questions", verifyToken, function(req, res) {
     if (token) {
       console.log(bearerToken);
 
-      jwt.verify(token, "secret", function(err, token_data) {
+      jwt.verify(token, "secret", function (err, token_data) {
         if (err) {
           console.info("token did not work");
           return res.status(403).send("Error");
         } else {
           req.user_data = token_data;
-          sql.connect(config, function(err) {
+          sql.connect(config, function (err) {
             if (err) console.log(err);
 
             // create Request object
             var request = new sql.Request();
 
             // query to the database and get the records
-            request.execute("dbo.ViewQuestions", function(err, recordset) {
+            request.execute("dbo.ViewQuestions", function (err, recordset) {
               if (err) console.log(err);
 
               // send records as a response
@@ -156,7 +107,7 @@ app.get("/user-questions", verifyToken, function(req, res) {
 });
 
 app.post("/admin-Add-Users", async (req, response) => {
-  sql.connect(config, function(err) {
+  sql.connect(config, function (err) {
     if (err) {
       console.log(err);
       response.status(400);
@@ -197,7 +148,7 @@ app.post("/admin-Add-Users", async (req, response) => {
 
 //AdminView users just pulls the users from the database
 app.post("/admin-Add-Users", async (req, response) => {
-  sql.connect(config, function(err) {
+  sql.connect(config, function (err) {
     try {
       if (err) {
         console.log(err);
@@ -218,7 +169,7 @@ app.post("/admin-Add-Users", async (req, response) => {
           request.input("password", sql.VarChar, password);
           request.query(
             "SELECT * FROM TestLogin WHERE email = @email AND password = @password",
-            function(err, recordset) {
+            function (err, recordset) {
               if (err) console.log(err);
               res.json(recordset);
             }
@@ -243,7 +194,7 @@ app.post("/admin-Add-Users", async (req, response) => {
 app.post("/login", async (req, res) => {
   console.log('Call login')
   const { username: email, password } = req.body;
-  
+
   var db = new sqlite3.Database('codestonedb.sql')
 
   const sql = 'SELECT * FROM users WHERE username = ?';
@@ -252,19 +203,19 @@ app.post("/login", async (req, res) => {
     if (err) {
       return console.error(err.message);
     }
-    if(row.username && row.username === email) {
-     const valid = bcrypt.compareSync(password, row.passwordHash)
+    if (row.username && row.username === email) {
+      const valid = bcrypt.compareSync(password, row.passwordHash)
 
-     if(valid) {
-       const token = jwt.sign({ email }, tokenSecret)
+      if (valid) {
+        const token = jwt.sign({ email }, tokenSecret)
 
-       res.status(200).json({ jwt: token });
-     }
-     
+        res.status(200).json({ jwt: token });
+      }
+
     } else {
-      res.status(401).json({ message: 'Error invalid username'})
+      res.status(401).json({ message: 'Error invalid username' })
     }
-   
+
   });
 
   // try {
@@ -322,13 +273,13 @@ function verifyToken(req, res, next) {
   const token = req.headers["authorization"].replace('Bearer ', '');
   // Check if bearer is undefined
   console.log('Token', token);
-  jwt.verify(token, tokenSecret, function(err, token_data) {
-    if(err) {
-     return res.status(401).send(err.message);
+  jwt.verify(token, tokenSecret, function (err, token_data) {
+    if (err) {
+      return res.status(401).send(err.message);
     }
 
     const { email } = token_data;
-    db = new sqlite3.Database('codestonedb.sql') 
+    db = new sqlite3.Database('codestonedb.sql')
     const sql = 'SELECT * FROM users WHERE username = ? LIMIT 1';
     db.get(sql, [email], (err, row) => {
       req.token = token
