@@ -1,24 +1,28 @@
-const express = require("express");
-const bodyParser = require("body-parser");
-const passport = require('passport');
-const configurePassport = require('./config/passport');
-const cors = require('cors')
-var session = require("express-session");
+import express from "express";
+import bodyParser from "body-parser";
+import passport from 'passport';
+import configurePassport from './config/passport';
+import cors from 'cors';
+import session from "express-session";
 
-const isAdmin = require('./utils').isAdmin
-const seedDB = require('./utils').seedDB;
+import { isAdmin, seedDB } from './utils';
 
 // Route Handlers
-const authRoutes = require('./routes/auth.routes');
-const userRoutes = require('./routes/user.routes');
-const adminRoutes = require('./routes/admin.routes');
+import authRoutes from './routes/auth.routes';
+import userRoutes from './routes/user.routes';
+import adminRoutes from './routes/admin.routes';
 
 const app = express();
 
 // Configure Express
 app.use(bodyParser.json());
 app.use(session({ secret: 'secretOption', cookie: { secure: true } }));
-app.use(cors())
+app.use(cors({
+  "origin": "*",
+  "methods": "GET,HEAD,PUT,PATCH,POST,DELETE",
+  "preflightContinue": false,
+  "optionsSuccessStatus": 204
+}))
 
 // Configure Passport
 configurePassport(app);
