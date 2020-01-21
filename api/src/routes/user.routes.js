@@ -1,17 +1,16 @@
 import DB from 'sqlite3';
-import send from '../mailer';
+import send from '../mail/mailer';
 const sqlite3 = DB.verbose();
 /**
  * Add Question
  * @param {*} req request
  * @param {*} res response
  */
-const add = (req, res) => {
+export const add = (req, res) => {
   const db = new sqlite3.Database('codestonedb.sql');
   const stmt = db.prepare('INSERT INTO questions VALUES (?, ?)');
   const { question } = req.body;
   const { username } = req.user;
-  const { template, email } = req.locals;
   const sql = 'SELECT rowid as id FROM users WHERE username = ?';
   db.get(sql, [username], (err, { id }) => {
     if (err) {
@@ -20,19 +19,17 @@ const add = (req, res) => {
     stmt.run(question, id);
     stmt.finalize();
     
-    send(email, 'Question Added', template);
+    send(username, 'Question Added', 'question');
     res.json({ message: 'Question added?' });
   })
 }
-
-module.exports.add = add;
 
 /**
  * Get Questions for User
  * @param {*} req request
  * @param {*} res response
  */
-const getAll = (req, res) => {
+export const getAll = (req, res) => {
   console.log('Questions works', req.user);
   const { id } = req.user;
 
@@ -48,5 +45,3 @@ const getAll = (req, res) => {
   })
   db.close()
 }
-
-module.exports.getAll = getAll;

@@ -5,7 +5,6 @@ import configurePassport from './config/passport';
 import cors from 'cors';
 
 import { isAdmin, seedDB } from './utils';
-import loadEmail from './mail/loadEmail';
 // Route Handlers
 import { login, authenticate } from './routes/auth.routes';
 import { add, getAll } from './routes/user.routes';
@@ -35,12 +34,12 @@ configurePassport(app);
 app.post("/login", passport.authenticate('local'), login);
 
 // Authenticate with JWT
-app.get('/authenticate', passport.authenticate('jwt'), loadEmail('index'), authenticate)
+app.get('/authenticate', passport.authenticate('jwt'), authenticate)
 
 // Use JWT verify before allowing route
 // Route Guard middleware
 app.get('/questions', passport.authenticate('jwt'), getAll);
-app.post('/questions', passport.authenticate('jwt'), loadEmail('question'), add)
+app.post('/questions', passport.authenticate('jwt'), add)
 
 // Route guarded for JWT as well as admin role.
 app.get('/users', passport.authenticate('jwt'), isAdmin, getUsers);

@@ -1,16 +1,13 @@
 import { signJwt } from '../utils';
-import send from '../mailer';
+import send from '../mail/mailer';
 /**
  * Authenticate
  * @param {*} req request
  * @param {*} res response
  */
 export const authenticate = (req, res) => {
-  console.log('Server works', req.locals);
-  const { template, email } = req.locals;
+  console.log('Server works', req.user);
   const { firstName, lastName, id } = req.user;
-  const subject = 'Yoo Hoo';
-  send(email, subject, template);
   res.json({
     jwt: signJwt(req.user),
     user: {

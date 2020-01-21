@@ -1,6 +1,8 @@
+import fs from 'fs';
+import path from 'path';
 import nodemailer from 'nodemailer';
 
-async function send(email, subject, html) {
+const send = async (email, subject, template) => {
   // Generate test SMTP service account from ethereal.email
   // Only needed if you don't have a real mail account for testing
   // let testAccount = await nodemailer.createTestAccount();
@@ -15,13 +17,16 @@ async function send(email, subject, html) {
     }
   });
 
+  const templatePath = path.join(__dirname, 'templates', `${template}.html`);
+  const messageHtml = await fs.createReadStream(templatePath);
+
   // send mail with defined transport object
   let info = await transporter.sendMail({
     from: '"CodeStone App 👻" <app@codestone.com>', // sender address
     to: email || "bar@example.com, baz@example.com", // list of receivers
     subject: subject || "Hello ✔", // Subject line
     text: "Hello world?", // plain text body
-    html: html || "<b>Hello world?</b>" // html body
+    html: messageHtml || "<b>Hello world?</b>" // html body
   });
 
   console.log("Message sent: %s", info.messageId);
