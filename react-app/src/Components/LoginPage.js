@@ -47,11 +47,13 @@ class Login extends React.Component {
         },
         body: JSON.stringify(data)
       })
-        .then(response => response.json()).then(json => {
-          console.log("Success:", json);
-          window.localStorage.setItem('myToken', json.jwt)
+        .then(response => {
+          console.log(response); 
+          return response.json()
+        }).then(({ jwt, user, ...rest }) => {
+          console.log("Success:", jwt, user);
+          window.localStorage.setItem('myToken', jwt)
         })
-
         .catch(error => {
           console.error("Error:", error);
         });

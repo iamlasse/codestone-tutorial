@@ -32,27 +32,32 @@ function Login() {
   );
 }
 
-const AuthRoute = ({ token, component: Component, ...rest }) => (
-	<Route
-		{...rest}
-		render={props =>
-			token && token !== undefined ? <Component {...props} /> : <Redirect to="/home" />
-		}
-	/>
-)
+const validToken = token => {
+  return !!token;
+}
+
+const AuthRoute = ({ component: Component, redirect }) => {
+  const token = window.localStorage.getItem('myToken');
+  // Validate token ...
+  return (
+    <Route
+      render={props =>
+        validToken(token) ? <Component {...props} /> : <Redirect to={redirect} />
+      }
+    />
+  )}
 
 function Routing(props) {
-  const token = window.localStorage.getItem('myToken');
   return (
     <BrowserRouter>
       <Switch>
         <Route exact path="/home" exact component={Home} />
         <Route exact path="/reset" exact component={ResetPassword} />
         <Route exact path="/login" exact component={LoginPage} />
-        <AuthRoute exact path="/user-questions" component={UserQuestions} {...props} token={token} />
+        <AuthRoute exact path="/user-questions" component={UserQuestions} redirect="/home" {...props}  />
         <Route exact path="/Register" exact component={Register} />
         <Route exact path="/user-history" exact component={History} />
-        <Route exact path="/admin-center" exact component={AdminCenter} />
+        <AuthRoute exact path="/admin-center" exact component={AdminCenter} redirect="/reset" {...props} />
         <Route
           exact
           path="/admin-question-editor"
