@@ -54,10 +54,10 @@ function Routing(props) {
         <Route exact path="/home" exact component={Home} />
         <Route exact path="/reset" exact component={ResetPassword} />
         <Route exact path="/login" exact component={LoginPage} />
-        <AuthRoute exact path="/user-questions" component={UserQuestions} redirect="/home" {...props}  />
+        <AuthRoute exact path="/user-questions" component={UserQuestions} redirect="/login" {...props}  />
         <Route exact path="/Register" exact component={Register} />
         <Route exact path="/user-history" exact component={History} />
-        <AuthRoute exact path="/admin-center" exact component={AdminCenter} redirect="/reset" {...props} />
+        <AuthRoute exact path="/admin-center" exact component={AdminCenter} redirect="/login" {...props} />
         <Route
           exact
           path="/admin-question-editor"

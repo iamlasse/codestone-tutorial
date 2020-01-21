@@ -33,7 +33,7 @@ export const getAll = (req, res) => {
   console.log('Questions works', req.user);
   const { id } = req.user;
 
-  db = new sqlite3.Database('codestonedb.sql');
+  const db = new sqlite3.Database('codestonedb.sql');
   const sql = 'SELECT * from questions WHERE user_id = ?';
   db.all(sql, [id], (err, rows) => {
     if (err) {

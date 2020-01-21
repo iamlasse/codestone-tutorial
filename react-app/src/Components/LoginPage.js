@@ -2,7 +2,7 @@ import React from "react";
 
 import "../bootstrap.min.css";
 import logo from "../codestone logo.png";
-import { BrowserRouter, Route, Switch } from "react-router-dom";
+import { BrowserRouter, Route, Switch, withRouter } from "react-router-dom";
 import Home from "./Home";
 import ResetPassword from "./ResetPassword";
 import LoginPage from "./LoginPage";
@@ -14,11 +14,11 @@ import Popup from "reactjs-popup";
 import { Formik } from "formik";
 import * as Yup from "yup";
 
-function Register() {
+function Register(props) {
   return (
     <div className="App">
       <Header />
-      <Login />
+      <Login {...props} />
     </div>
   );
 }
@@ -29,8 +29,9 @@ class Login extends React.Component {
 
     this.state = { email: "", password: "" };
     this.onSubmit = this.handleSubmit.bind(this);
+    
   }
-
+  
   handleSubmit(e) {
     e.preventDefault();
     if (this.state.email.length < 8 || this.state.password.length < 8) {
@@ -53,6 +54,7 @@ class Login extends React.Component {
         }).then(({ jwt, user, ...rest }) => {
           console.log("Success:", jwt, user);
           window.localStorage.setItem('myToken', jwt)
+          this.props.history.push('/home');
         })
         .catch(error => {
           console.error("Error:", error);
@@ -67,6 +69,7 @@ class Login extends React.Component {
           .then(response => response.json())
           .then(json => {
             console.log('Questions', json);
+            
           })
     }
   }
@@ -198,4 +201,4 @@ function Header() {
     </div>
   );
 }
-export default Register;
+export default withRouter(Register);
