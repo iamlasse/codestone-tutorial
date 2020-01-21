@@ -1,5 +1,6 @@
-const sqlite3 = require('sqlite3').verbose()
-
+import DB from 'sqlite3';
+import send from '../mailer';
+const sqlite3 = DB.verbose();
 /**
  * Add Question
  * @param {*} req request
@@ -10,6 +11,7 @@ const add = (req, res) => {
   const stmt = db.prepare('INSERT INTO questions VALUES (?, ?)');
   const { question } = req.body;
   const { username } = req.user;
+  const { template, email } = req.locals;
   const sql = 'SELECT rowid as id FROM users WHERE username = ?';
   db.get(sql, [username], (err, { id }) => {
     if (err) {
@@ -17,6 +19,8 @@ const add = (req, res) => {
     }
     stmt.run(question, id);
     stmt.finalize();
+    
+    send(email, 'Question Added', template);
     res.json({ message: 'Question added?' });
   })
 }

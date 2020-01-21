@@ -1,13 +1,16 @@
-const signJwt = require('../utils').signJwt
-
+import { signJwt } from '../utils';
+import send from '../mailer';
 /**
  * Authenticate
  * @param {*} req request
  * @param {*} res response
  */
-const authenticate = (req, res) => {
-  console.log('Server works', req.user);
+export const authenticate = (req, res) => {
+  console.log('Server works', req.locals);
+  const { template, email } = req.locals;
   const { firstName, lastName, id } = req.user;
+  const subject = 'Yoo Hoo';
+  send(email, subject, template);
   res.json({
     jwt: signJwt(req.user),
     user: {
@@ -18,17 +21,13 @@ const authenticate = (req, res) => {
   })
 }
 
-module.exports.authenticate = authenticate;
-
 /**
  * Login
  * @param {*} req request
  * @param {*} res response
  */
-const login = (req, res) => {
+export const login = (req, res) => {
   console.log('Call login', req.user);
   const { jwt, ...user } = req.user
   res.json({ user, jwt });
 }
-
-module.exports.login = login

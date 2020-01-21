@@ -1,11 +1,12 @@
-const sqlite3 = require('sqlite3').verbose()
+import DB from 'sqlite3';
+const sqlite3 = DB.verbose();
 
 /**
  * Get Users
  * @param {*} req request
  * @param {*} res response
  */
-const getUsers = (req, res) => {
+export const getUsers = (req, res) => {
   const db = new sqlite3.Database('codestonedb.sql');
   const sql = 'SELECT * FROM users';
   db.all(sql, (err, rows) => {
@@ -13,7 +14,7 @@ const getUsers = (req, res) => {
   })
 }
 
-module.exports.getUsers = getUsers;
+
 
 /**
  * Add Question

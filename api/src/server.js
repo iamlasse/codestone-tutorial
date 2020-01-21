@@ -3,20 +3,21 @@ import bodyParser from "body-parser";
 import passport from 'passport';
 import configurePassport from './config/passport';
 import cors from 'cors';
-import session from "express-session";
 
 import { isAdmin, seedDB } from './utils';
-
+import loadEmail from './mail/loadEmail';
 // Route Handlers
-import authRoutes from './routes/auth.routes';
-import userRoutes from './routes/user.routes';
-import adminRoutes from './routes/admin.routes';
+import { login, authenticate } from './routes/auth.routes';
+import { add, getAll } from './routes/user.routes';
+import { getUsers, addQuestion } from './routes/admin.routes';
 
 const app = express();
 
 // Configure Express
+app.use(express.static('src'));
+app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
-app.use(session({ secret: 'secretOption', cookie: { secure: true } }));
+// app.use(session({ secret: 'secretOption', cookie: { secure: true } }));
 app.use(cors({
   "origin": "*",
   "methods": "GET,HEAD,PUT,PATCH,POST,DELETE",
@@ -26,25 +27,24 @@ app.use(cors({
 
 // Configure Passport
 configurePassport(app);
-
 /**
  * Setup Routes
  */
 
 // Login with username and password to get jwt from session
-app.post("/login", passport.authenticate('local'), authRoutes.login);
+app.post("/login", passport.authenticate('local'), login);
 
 // Authenticate with JWT
-app.get('/authenticate', passport.authenticate('jwt', { session: false }), authRoutes.authenticate)
+app.get('/authenticate', passport.authenticate('jwt'), loadEmail('index'), authenticate)
 
 // Use JWT verify before allowing route
 // Route Guard middleware
-app.get('/questions', passport.authenticate('jwt'), userRoutes.getAll);
-app.post('/questions', passport.authenticate('jwt'), userRoutes.add)
+app.get('/questions', passport.authenticate('jwt'), getAll);
+app.post('/questions', passport.authenticate('jwt'), loadEmail('question'), add)
 
 // Route guarded for JWT as well as admin role.
-app.get('/users', passport.authenticate('jwt'), isAdmin, adminRoutes.getUsers);
-app.post('/admin/questions', passport.authenticate('jwt'), isAdmin, adminRoutes.addQuestion);
+app.get('/users', passport.authenticate('jwt'), isAdmin, getUsers);
+app.post('/admin/questions', passport.authenticate('jwt'), isAdmin, addQuestion);
 
 // Start Server
 const port = process.env.PORT || 5000;

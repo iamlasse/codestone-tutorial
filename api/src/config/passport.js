@@ -1,23 +1,24 @@
-const sqlite3 = require('sqlite3').verbose(),
-  passport = require('passport'),
-  JwtStrategy = require('passport-jwt').Strategy,
-  ExtractJwt = require('passport-jwt').ExtractJwt,
-  LocalStrategy = require('passport-local').Strategy,
-  bcrypt = require('bcrypt'),
-  signJwt = require('../utils').signJwt;
+import sqlite3 from 'sqlite3';
+import passport from 'passport';
+import { Strategy as JwtStrategy, ExtractJwt } from 'passport-jwt';
+import { Strategy as LocalStrategy } from 'passport-local';
+import bcrypt from 'bcrypt';
+import { signJwt } from '../utils';
 
 const TOKEN_SECRET = 'codeStoneSecret';
 
-const configurePassport = app => {
+export default app => {
   app.use(passport.initialize());
-  app.use(passport.session());
+  
+  // Session or no?
+  // app.use(passport.session());
 
-  const opts = {};
-
-  opts.jwtFromRequest = ExtractJwt.fromAuthHeaderAsBearerToken(),
-    opts.secretOrKey = TOKEN_SECRET;
-  opts.issuer = 'accounts.junction.ai';
-  opts.audience = 'junction-ai';
+  const opts = {
+    jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+    secretOrKey: TOKEN_SECRET,
+    issuer: 'accounts.codestone.com',
+    audience: 'codestone'
+  };
 
   // Local => username, password
   passport.use(new LocalStrategy(
@@ -28,15 +29,16 @@ const configurePassport = app => {
         console.log('Local Strategy ', row)
         if (err) {
           console.error(err.message);
-          return done(err, false)
+          return done(err)
         }
         if (row.username && row.username === email) {
           const valid = await bcrypt.compare(password, row.passwordHash)
           const { firstName, lastName } = row;
-          if (valid) {
-            const token = signJwt(row);
-            return done(null, { firstName, lastName, id: email, jwt: token });
+          if (!valid) {
+            return done(null, false, { message: 'Incorrect Password'});
           }
+          const token = signJwt(row);
+          return done(null, { firstName, lastName, id: email, jwt: token });
         }
 
         return done(null, false);
@@ -86,4 +88,3 @@ const configurePassport = app => {
   });
 }
 
-module.exports = configurePassport

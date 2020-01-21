@@ -13,8 +13,8 @@ const saltRounds = 10;
 const signJwt = ({ username: email }) => jwt.sign({
   email,
   sub: email,
-  iss: 'accounts.junction.ai',
-  aud: 'junction-ai'
+  iss: 'accounts.codestone.com',
+  aud: 'codestone'
 }, TOKEN_SECRET, {
   expiresIn: '1m'
 })
